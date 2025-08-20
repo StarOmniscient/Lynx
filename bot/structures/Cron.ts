@@ -1,11 +1,13 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, CommandInteraction, PermissionsBitField} from "discord.js";
+
 import { LynxClient } from "../client/client.ts";
+import client from "../index.ts";
 
 export class Cron {
     public name: string
     public description: string
     public enabled: boolean
-    public repeatTime: number //in seconds
+    public repeatTime: number //in miliseconds
+    public client: LynxClient = client
     
 
 

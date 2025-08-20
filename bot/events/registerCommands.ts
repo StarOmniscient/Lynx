@@ -26,14 +26,9 @@ export default class RegisterCommandsEvent extends Event {
             })
             console.log(`Succesfully loaded ${globalCmds.length} global (/) commands`)
 
-            let gCmd = globalCmds.map((cmd: { name: any; id: any; }) => {
-                return { Commands: cmd.name, Id: cmd.id };
-            });
-
-            console.table(gCmd)
         }
 
-         const devCmds: any = await rest.put(Routes.applicationGuildCommands(clientId, process.env.DEV_SERVER!), {
+        const devCmds: any = await rest.put(Routes.applicationGuildCommands(clientId, process.env.DEV_SERVER!), {
             body: this.GetJson(this.client.commands.filter(command => command.dev == "development"))
         })
 
@@ -43,9 +38,6 @@ export default class RegisterCommandsEvent extends Event {
         let dCmd = devCmds.map((cmd: { name: any; id: any; }) => {
             return { Commands: cmd.name, Id: cmd.id };
         });
-        if (dCmd) console.table(dCmd)
-        
-
 
 
     }
@@ -59,7 +51,7 @@ export default class RegisterCommandsEvent extends Event {
                 description: command.description,
                 category: command.category,
                 options: command.options,
-                cooldown: command.cooldown, 
+                cooldown: command.cooldown,
                 userPermissions: command.userPermissions,
                 clientPermissions: command.clientPermissions,
                 dev: command.dev,

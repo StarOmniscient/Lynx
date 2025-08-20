@@ -1,5 +1,6 @@
 import { Events } from "discord.js";
 import { LynxClient } from "../client/client.ts";
+import client from "../index.ts";
 
 export class Event {
     public name: string;
@@ -7,7 +8,7 @@ export class Event {
     public once: boolean;
     public enabled: boolean
     public description: string;
-    public client: LynxClient
+    public client: LynxClient = client
 
 
 
@@ -18,7 +19,6 @@ export class Event {
         this.description = options.description
         this.once = options.once
         this.enabled = options.enabled
-        this.client = client
     }
 
     public async eventExecute(...args: any) {

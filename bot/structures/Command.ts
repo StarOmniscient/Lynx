@@ -1,20 +1,23 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, CommandInteraction, PermissionsBitField} from "discord.js";
 import { LynxClient } from "../client/client.ts";
+import client from "../index.ts";
+import * as Discord from "discord.js"
+
 
 export class Command {
     public name: string;
     public description: string;
     public category: string;
-    public options: any[];
+    public options: Discord.ApplicationCommandOption[];
     public cooldown: number;
-    public userPermissions: PermissionsBitField[]
-    public clientPermissions: PermissionsBitField[]
+    public userPermissions: Discord.PermissionResolvable[]
+    public clientPermissions: Discord.PermissionResolvable[]
     public dev: string
     public serverOnly: string[]
     public enabled: boolean
     public nsfw: boolean
     public cooldownFilteredUsers: string[]
     public allowDm: boolean
+    public client: LynxClient = client
 
 
     
@@ -35,11 +38,11 @@ export class Command {
 
     }
 
-    public async autoComplete(interaction: AutocompleteInteraction) {
+    public async autoComplete(interaction: Discord.AutocompleteInteraction): Promise<any> {
 
     }
 
-    public async slashCommandExecute(interaction: ChatInputCommandInteraction) {
+    public async slashCommandExecute(interaction: Discord.ChatInputCommandInteraction): Promise<any> {
 
     }
 
@@ -51,14 +54,16 @@ export interface ICommandOptions {
     name: string;
     description: string;
     category: string;
-    options: any[];
+    options: Discord.ApplicationCommandOption[];
     cooldown: number; //default 3 sec
-    userPermissions: PermissionsBitField[]
-    clientPermissions: PermissionsBitField[]
+    userPermissions: Discord.PermissionResolvable[]  //   CRASHES BOT
+    clientPermissions: Discord.PermissionResolvable[] //   CRASHES BOT
     dev: string
     serverOnly: string[]
     enabled: boolean
     nsfw: boolean
     cooldownFilteredUsers: string[]
     allowDm: boolean
+
+
 }

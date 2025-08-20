@@ -6,11 +6,13 @@ import { EventHandler } from "../handlers/eventHandler.ts";
 import { SubCommand } from "../structures/SubCommand.ts";
 import { CronHandler } from "../handlers/cronHandler.ts";
 import { Cron } from "../structures/Cron.ts";
+import { Logger } from "../utils/logger.ts";
 
 
 export class LynxClient extends Client{
     public mode: "development" | "production";
     public prisma: PrismaClient
+    public logger: Logger
 
     public commands: Collection<string, Command> 
     public subCommands: Collection<string, SubCommand>
@@ -47,6 +49,8 @@ export class LynxClient extends Client{
 
         this.mode = process.argv.slice(2).includes("--dev") ? "development" : "production";
         this.prisma = new PrismaClient()
+        this.logger = new Logger()
+
 
         this.commands = new Collection()
         this.subCommands = new Collection()

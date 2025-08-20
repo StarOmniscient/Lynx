@@ -34,8 +34,9 @@ export class CronHandler {
             console.log(`Loaded cron: ${cron.name}`);
             
             setInterval(a => {
+                this.client.logger.info(`Running cron: ${cron.name}`)
                 cron.cronExecute()
-            }, cron.repeatTime * 1000)
+            }, cron.repeatTime)
 
         })
     }
