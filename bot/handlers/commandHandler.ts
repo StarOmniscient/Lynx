@@ -24,7 +24,7 @@ export class CommandHandler {
             if (!command.enabled) return
 
             if (!command.name) {
-                console.log(`Command: ${file.split(path.sep).pop()} does not have a name`)
+                this.client.logger.error(`Command: ${file.split(path.sep).pop()} does not have a name`)
                 return
             }
 
@@ -34,7 +34,7 @@ export class CommandHandler {
                 this.client.commands.set(command.name, command as Command);
 
             }
-            console.log(`Loaded command: ${command.name}`);
+            this.client.logger.info(`Loaded command: ${command.name}`);
         })
     }
 }

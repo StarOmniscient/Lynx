@@ -5,17 +5,17 @@ import { EmbedBuilder } from "@discordjs/builders"
 import fetch from "node-fetch";
 import "dotenv/config"
 import client from "../index.ts"
-import config from "../../config.ts" 
+import config from "../../config.ts"
 
 const edupage = new Edupage()
 
-export default class eduTimelineCron extends Cron {
+export default class EduTimeLineCron extends Cron {
     public constructor() {
         super({
             name: "eduTimeline",
             description: "",
             enabled: true,
-            repeatTime: 10000
+            repeatTime: 10 * 1000 // 10 sec
         })
     }
 
@@ -27,34 +27,40 @@ export default class eduTimelineCron extends Cron {
 
         const timeline = edupage.timeline
         const table = await this.client.prisma.timeline.findMany({
-            select: {
-                timeLineID: true
+
+        }).catch(
+            (err) => {
+                return this.client.logger.error(`Error fetching timeline: ${err}`)
             }
-        })
+        )
+        if (!table) return;
+
         //console.log(table)
         const removeType = ["h_chatlist", "payments", "vcelicka", "znamka", "ospravedlnenka", "student_absent", "h_contest", "contest", "h_homework", "h_znamky", "interest", "settings", "znamkydoc", "testvysledok"]
 
         //console.log(timeline)
         const newTimeline = await Promise.all(timeline.map(async item => {
-            
+
             if (table.includes(item.id)) return
             if (removeType.includes(item.type)) return;
             if (item.recipientUserString.includes("Ucitel")) return;
             if (item.recipientUserString.includes("StudentOnly408089")) return;
-            
-            try {
-                await this.client.prisma.timeline.create({
-                    data: {
-                        timeLineID: item.id,
-                        title: item.title,
-                        type: item.type,
-                        text: item.text
-                    }
-                })
-                
-            } catch (error: Error | any) {
-                this.client.logger.error(error)
-            }
+
+
+            await this.client.prisma.timeline.create({
+                data: {
+                    timeLineID: item.id,
+                    title: item.title,
+                    type: item.type,
+                    text: item.text
+                }
+            }).catch(
+                (err) => {
+                    return this.client.logger.error(`Error creating timeline: ${err}`)
+                }
+            )
+
+
 
 
             return {
@@ -109,7 +115,7 @@ export default class eduTimelineCron extends Cron {
             } else {
 
                 if (item.text.length < 1) {
-                    embed.setTitle(item.title.replace("Sebastián Savary", "----"))
+                    embed.setTitle(item.title.replace(process.env.SKIP_NAME, "----"))
                     embed.setDescription(`No text`)
                 } else {
                     embed.setDescription(item.text)
@@ -117,9 +123,9 @@ export default class eduTimelineCron extends Cron {
             }
 
             if (item.title.length > 256) {
-                embed.setTitle(item.title.slice(0, 256).replace("Sebastián Savary", "----"))
+                embed.setTitle(item.title.slice(0, 256).replace(process.env.SKIP_NAME, "----"))
             } else {
-                embed.setTitle(item.title.replace("Sebastián Savary", "----"))
+                embed.setTitle(item.title.replace(process.env.SKIP_NAME, "----"))
             }
 
             if (item.attachments.length > 0) {

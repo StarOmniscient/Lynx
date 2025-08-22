@@ -21,17 +21,17 @@ export class CronHandler {
             if (!cron.enabled) return
 
             if (!cron.name) {
-                console.log(`Cron: ${file.split(path.sep).pop()} does not have a name`)
+                this.client.logger.error(`Cron: ${file.split(path.sep).pop()} does not have a name`)
                 return
             }
 
             if (!cron.repeatTime) {
-                console.log(`Cron: ${file.split(path.sep).pop()} does not have a repeat time)`)
+                this.client.logger.error(`Cron: ${file.split(path.sep).pop()} does not have a repeat time)`)
                 return
             }
             this.client.crons.set(cron.name, cron);
             cron.cronExecute()
-            console.log(`Loaded cron: ${cron.name}`);
+            this.client.logger.info(`Loaded cron: ${cron.name}`);
             
             setInterval(a => {
                 this.client.logger.info(`Running cron: ${cron.name}`)
