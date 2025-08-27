@@ -16,7 +16,7 @@ export default class TikTokCommand extends Command {
     constructor() {
         super({
             name: "tiktok",
-            description: "Sends a random TikTok video.",
+            description: "Sends a TikTok video from URL.",
             category: "Misc",
             allowDm: true,
             clientPermissions: [],

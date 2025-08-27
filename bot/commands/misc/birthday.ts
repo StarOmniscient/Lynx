@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, MessageFlags } from "discord.js"
 import client from "../../index.ts"
 import { Command } from "../../structures/Command.ts"
+import { channel } from "diagnostics_channel"
 
 export default class BirthDayCommand extends Command {
     public constructor() {
@@ -13,9 +14,9 @@ export default class BirthDayCommand extends Command {
             allowDm: false,
             cooldownFilteredUsers: [],
             description: "Adds birthday to database",
-            dev: "production",
+            dev: client.mode,
             nsfw: false,
-            serverOnly: ["1015277694415548467"],
+            serverOnly: [],
             enabled: true,
             options: [
                 {
@@ -25,11 +26,18 @@ export default class BirthDayCommand extends Command {
                     required: true
                 },
                 {
+                    name: "channel",
+                    description: "Channel to send birthday to",
+                    type: ApplicationCommandOptionType.Channel,
+                    required: true
+                },
+                {
                     name: "user",
                     description: "User to add birthday to",
                     type: ApplicationCommandOptionType.User,
                     required: false
-                }
+                },
+                
             ]
         })
     }
@@ -37,23 +45,30 @@ export default class BirthDayCommand extends Command {
     public async slashCommandExecute(interaction: ChatInputCommandInteraction) {
         const user = interaction.options.getUser("user")?.id || interaction.user.id
         const date = interaction.options.getString("date")!
+        const channel = interaction.options.getChannel("channel")!
+        const guildID = interaction.guildId!
 
         const [day, month, year] = date.split(".")
 
         const userExists = await this.client.prisma.birthdays.findFirst({
             where: {
-                userID: user
+                userID: user,
+                guildID: guildID
+
             }
         })
-        console.log(userExists)
+
         if (userExists) {
             this.client.logger.warn(`Updating birthday for ${user}`)
             await this.client.prisma.birthdays.updateMany({
                 where: {
-                    userID: user
+                    userID: user,
+                    guildID: guildID,
+
                 },
                 data: {
-                    date: `${year}-${month}-${day}`
+                    date: `${year}-${month}-${day}`,
+                    channelID: channel.id
                 }
             }).catch(
                 (err) => {
@@ -67,7 +82,9 @@ export default class BirthDayCommand extends Command {
         await this.client.prisma.birthdays.create({
             data: {
                 userID: user,
-                date: `${year}-${month}-${day}`
+                date: `${year}-${month}-${day}`,
+                channelID: channel.id,
+                guildID: guildID
             }
         }).catch(
             (err) => {

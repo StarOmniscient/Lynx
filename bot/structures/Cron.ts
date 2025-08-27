@@ -8,7 +8,7 @@ export class Cron {
     public enabled: boolean
     public repeatTime: number //in miliseconds
     public client: LynxClient = client
-    
+    public excludeRunOnStart: boolean
 
 
     
@@ -17,6 +17,7 @@ export class Cron {
         this.description = options.description
         this.enabled = options.enabled
         this.repeatTime = options.repeatTime
+        this.excludeRunOnStart = options.excludeRunOnStart
 
     }
 
@@ -33,5 +34,6 @@ export interface ICronOptions {
     description: string
     enabled: boolean
     repeatTime: number //in seconds
+    excludeRunOnStart: boolean
 
 }

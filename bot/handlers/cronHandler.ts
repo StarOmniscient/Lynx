@@ -30,7 +30,11 @@ export class CronHandler {
                 return
             }
             this.client.crons.set(cron.name, cron);
-            cron.cronExecute()
+
+            if (!cron.excludeRunOnStart) {
+                await cron.cronExecute()
+            }
+            
             this.client.logger.info(`Loaded cron: ${cron.name}`);
             
             setInterval(a => {

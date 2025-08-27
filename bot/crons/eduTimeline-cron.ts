@@ -15,7 +15,8 @@ export default class EduTimeLineCron extends Cron {
             name: "eduTimeline",
             description: "",
             enabled: true,
-            repeatTime: 10 * 1000 // 10 sec
+            repeatTime: 10 * 1000, // 10 sec
+            excludeRunOnStart: false
         })
     }
 

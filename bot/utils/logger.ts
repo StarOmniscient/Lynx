@@ -1,16 +1,37 @@
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 
 export class Logger {
-    public info(message: string): void {
-        console.log(`${new Date().toISOString()} [INFO] ${message}`);
+    private async save(level: string, message: string, context?: string) {
+
+        try {
+            await prisma.log.create({
+                data: {
+                    level,
+                    message,
+                    context,
+                },
+            });
+            console.log(`${new Date().toLocaleTimeString()} [${level}] ${message}`);
+        } catch (err) {
+            console.error("Failed to save log:", err);
+        }
     }
 
-    public warn(message: string): void {
-        console.warn(`${new Date().toISOString()} [WARN] ${message}`);
+    public info(message: string, context?: string) {
+        this.save("INFO", message, context);
     }
 
-    public error(message: string): void {
-        console.error(`${new Date().toISOString()} [ERROR] ${message}`);
+    public warn(message: string, context?: string) {
+        this.save("WARN", message, context);
     }
 
+    public error(message: string, context?: string) {
+        this.save("ERROR", message, context);
+    }
+
+    public debug(message: string, context?: string) {
+        this.save("DEBUG", message, context);
+    }
 }

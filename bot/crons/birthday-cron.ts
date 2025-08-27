@@ -1,5 +1,4 @@
 import { Cron } from "../structures/Cron.ts";
-import config from "../../config.ts"
 import { EmbedBuilder, TextChannel } from "discord.js";
 
 export default class BirthDayCron extends Cron {
@@ -8,47 +7,58 @@ export default class BirthDayCron extends Cron {
             name: "birthday",
             description: "Checks birthdays",
             enabled: true,
-            repeatTime: 60 * 60 * 1000 // hour
-        })
+            repeatTime: 1000 * 60 * 60 * 12, // 12 hours in ms
+            excludeRunOnStart: false
+        });
     }
 
     public async cronExecute() {
-        const today = new Date()
-        const date = await this.client.prisma.birthdays.findMany().catch(
-            (err) => {
-                return this.client.logger.error(`Error fetching birthdays: ${err}`)
+        const today = new Date();
+        const todayYear = today.getFullYear();
+        const todayMonth = String(today.getMonth() + 1)
+        const todayDay = String(today.getDate())
+        const todayString = today.toISOString().split("T")[0];
+
+
+        // Fetch birthdays for today that haven't been sent yet
+        const birthdays = await this.client.prisma.birthdays.findMany({
+            where: {
+                AND: [
+                    { date: { contains: `-${todayMonth}-${todayDay}` } },
+                    {
+                        OR: [
+                            { lastSent: null },
+                            { lastSent: { lt: new Date(todayString) } }
+                        ]
+                    }
+                ]
             }
-        )
+        }).catch(err => this.client.logger.error(`Error fetching birthdays: ${err}`));
 
-        if (date) {
-            date.map(async item => {
-                const [year, month, day] = item.date.split("-")
-                const [todayYear, todayMonth, todayDay] = String([today.getFullYear(), today.getMonth() + 1, today.getDate()])
+        if (!birthdays || birthdays.length === 0) return;
 
-                if (month == todayMonth && day == todayDay) {
-                    const guild = await this.client.guilds.fetch(config.birthdays.guildID)
-                    const channel = await guild.channels.cache.get(config.birthdays.channelID) as TextChannel
+        for (const birthday of birthdays) {
+            if (!birthday.guildID || !birthday.channelID) continue;
 
-                    const user = await this.client.prisma.birthdays.findMany({
-                        where: {
-                            userID: item.userID
-                        }
-                    }).catch(
-                        (err) => {
-                            return this.client.logger.error(`Error fetching user: ${err}`)
-                        }
-                    )
+            try {
+                const guild = await this.client.guilds.fetch(birthday.guildID);
+                const channel = guild.channels.cache.get(birthday.channelID) as TextChannel;
 
-                    if (!user) return;
+                const birthYear = Number(birthday.date.split("-")[0]);
+                const embed = new EmbedBuilder()
+                    .setTitle(`🎉 Happy Birthday! You are ${todayYear - birthYear} years old!`)
+                    .setDescription(`<@${birthday.userID}>`);
 
-                    const embed = new EmbedBuilder()
-                        .setTitle(`🎉 Happy Birthday! You are ${Number(todayYear) - Number(year)} years old!`)
-                        .setDescription(`<@${user[0].userID}>`)
+                await channel.send({ embeds: [embed] });
 
-                    await channel.send({ embeds: [embed] })
-                }
+                // Mark as sent for this row
+                await this.client.prisma.birthdays.update({
+                    where: { id: birthday.id },
+                    data: { lastSent: today }
+                });
+            } catch (err) {
+                this.client.logger.error(`Error sending birthday for user ${birthday.userID} in guild ${birthday.guildID}: ${err}`);
             }
-            )
         }
     }
 }
