@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 export class Logger {
     private async save(level: string, message: string, context?: string) {
-
         try {
             await prisma.log.create({
                 data: {
@@ -50,4 +49,5 @@ export class Logger {
     public debug(message: string, context?: string) {
         this.save("DEBUG", message, context);
     }
+
 }

@@ -77,7 +77,7 @@ export default class TikTokCommand extends Command {
         fs.unlinkSync(filePath);
 
     } catch (err) {
-        this.client.logger.error(`Failed to download TikTok video: ${err}`);
+        this.client.logger.error(`Failed to download TikTok video: ${err}`, this.name);
         await interaction.editReply("❌ Failed to download TikTok video.");
     }
 }

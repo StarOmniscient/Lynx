@@ -407,7 +407,7 @@ export default class EduCommand extends Command {
                 await messageChannel
                     .send({ content: htmlToText(str, { wordwrap: false }) })
                     .catch((err) => {
-                        this.client.logger.error(`Error sending message: ${err}`)
+                        this.client.logger.error(`Error sending message: ${err}`, this.name)
                         return;
                     });
             }
@@ -421,7 +421,7 @@ export default class EduCommand extends Command {
                         fs.unlinkSync(`./${file.name}`);
                     })
                     .catch((err) => {
-                        this.client.logger.error(`Error sending Attachment: ${err}`)
+                        this.client.logger.error(`Error sending Attachment: ${err}`, this.name)
                         return;
                     });
             }
@@ -435,7 +435,7 @@ export default class EduCommand extends Command {
                         fs.unlinkSync(`./${img.name}`);
                     })
                     .catch((err) => {
-                        this.client.logger.error(`Error sending Attachment: ${err}`)
+                        this.client.logger.error(`Error sending Attachment: ${err}`, this.name)
                         return;
                     });
             }

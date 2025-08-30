@@ -22,13 +22,15 @@ export class EventHandler {
                 if (!event.enabled) return
 
                 if (!event.name) {
-                    this.client.logger.error(`Event: ${file.split(path.sep).pop()} does not have a name`)
+                    this.client.logger.error(`Event: ${file.split(path.sep).pop()} does not have a name`, event.name)
                     return
                 }
                 const execute = (...args: any) => event.eventExecute(...args)
                 if (event.once) this.client.once(event.type as string, execute)
                 else this.client.on(event.type as string, execute)
-                this.client.logger.info(`Loaded event: ${event.name}`);
+                
+                this.client.events.set(event.name, event as Event)
+                this.client.logger.info(`Loaded event: ${event.name}`, event.name);
                 return 
 
             } catch (err) {

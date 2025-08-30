@@ -31,6 +31,67 @@ app.get('/commands', (req, res) => {
   });
 });
 
+app.get(`/events`, (req, res) => {
+  res.json({
+    events: Array.from(client.events.map((event) => {
+      return {
+        name: event.name,
+        enabled: event.enabled,
+        description: event.description,
+      }
+    }))
+  })
+})
+
+app.get('/events/:eventName', (req, res) => {
+  const eventName = req.params.eventName; // get the event name from the URL)
+  const event = client.events.get(eventName)!;
+
+  if (!event) {
+    return res.status(404).json({ error: 'Event not found' });
+  }
+  res.json({
+    name: event.name,
+    description: event.description,
+    enabled: event.enabled,
+    type: event.type,
+    once: event.once
+  });
+});
+
+app.get('/crons', (req, res) => {
+  res.json(({
+    crons: Array.from(client.crons.map((cron) => {
+      return {
+        name: cron.name,
+        enabled: cron.enabled,
+        description: cron.description,
+      }
+    }))
+  })
+  );
+});
+
+app.get('/crons/:cronName', (req, res) => {
+  const cronName = req.params.cronName; // get the cron name from the URL
+  const cron = client.crons.get(cronName)!;
+
+  if (!cron) {
+    return res.status(404).json({ error: 'Cron not found' });
+  }
+  res.json({
+    name: cron.name,
+    description: cron.description,
+    enabled: cron.enabled,
+    repeatTime: cron.repeatTime,
+    excludeRunOnStart: cron.excludeRunOnStart
+  });
+});
+
+
+
+
+
 app.get('/commands/:command', (req, res) => {
   const cmdName = req.params.command; // get the command name from the URL
   const command: ICommandOptions = client.commands.get(cmdName)!;

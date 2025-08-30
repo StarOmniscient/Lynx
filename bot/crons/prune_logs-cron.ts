@@ -4,10 +4,10 @@ import { Cron } from "../structures/Cron.ts";
 export default class PruneLogs extends Cron {
     public constructor() {
         super({
-            name: "pruneLogs",
-            description: "Removes logs every 24 hours",
+            name: "PruneLogsCron",
+            description: "Removes logs every 48 hours",
             enabled: true,
-            repeatTime: 1000 * 60 * 60 * 24,
+            repeatTime: 1000 * 60 * 60 * 24 * 2,
             excludeRunOnStart: true
         })
     }
@@ -19,7 +19,7 @@ export default class PruneLogs extends Cron {
         
         await this.client.prisma.log.deleteMany({
         });
-        this.client.logger.cron(`Pruned ${count} old logs`);
+        this.client.logger.cron(`Pruned ${count} old logs`, this.name);
 
     }
 }

@@ -7,7 +7,7 @@ import Link from "next/link";
 const Navbar = () => {
   const [active, setActive] = useState("Home");
 
-  const tabs = ["Home", "Logs", "Commands", "Config", "Database","Chat"];
+  const tabs = ["Home", "Logs", "Commands", "Events", "Crons", "Config", "Database","Chat"];
 
   return (
     <nav className="w-full bg-[#0c0f1a] shadow-md">

@@ -4,7 +4,7 @@ import { EmbedBuilder, TextChannel } from "discord.js";
 export default class BirthDayCron extends Cron {
     public constructor() {
         super({
-            name: "birthday",
+            name: "BirthdayCheckCron",
             description: "Checks birthdays",
             enabled: true,
             repeatTime: 1000 * 60 * 60 * 12, // 12 hours in ms
@@ -33,7 +33,7 @@ export default class BirthDayCron extends Cron {
                     }
                 ]
             }
-        }).catch(err => this.client.logger.error(`Error fetching birthdays: ${err}`));
+        }).catch(err => this.client.logger.error(`Error fetching birthdays: ${err}`, this.name));
 
         if (!birthdays || birthdays.length === 0) return;
 
@@ -57,7 +57,7 @@ export default class BirthDayCron extends Cron {
                     data: { lastSent: today }
                 });
             } catch (err) {
-                this.client.logger.error(`Error sending birthday for user ${birthday.userID} in guild ${birthday.guildID}: ${err}`);
+                this.client.logger.error(`Error sending birthday for user ${birthday.userID} in guild ${birthday.guildID}: ${err}`, this.name);
             }
         }
     }

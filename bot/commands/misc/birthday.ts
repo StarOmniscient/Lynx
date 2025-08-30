@@ -59,7 +59,7 @@ export default class BirthDayCommand extends Command {
         })
 
         if (userExists) {
-            this.client.logger.warn(`Updating birthday for ${user}`)
+            this.client.logger.warn(`Updating birthday for ${user}`, this.name)
             await this.client.prisma.birthdays.updateMany({
                 where: {
                     userID: user,
@@ -72,7 +72,7 @@ export default class BirthDayCommand extends Command {
                 }
             }).catch(
                 (err) => {
-                    this.client.logger.error(`Error updating birthday for ${user}: ${err}`)
+                    this.client.logger.error(`Error updating birthday for ${user}: ${err}`, this.name)
                 }
             )
 
@@ -88,7 +88,7 @@ export default class BirthDayCommand extends Command {
             }
         }).catch(
             (err) => {
-                this.client.logger.error(`Error creating birthday for ${user}: ${err}`)
+                this.client.logger.error(`Error creating birthday for ${user}: ${err}`, this.name)
             }
         )
 

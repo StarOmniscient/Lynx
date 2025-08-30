@@ -12,8 +12,8 @@ const edupage = new Edupage()
 export default class EduTimeLineCron extends Cron {
     public constructor() {
         super({
-            name: "eduTimeline",
-            description: "",
+            name: "EduTimelineCron",
+            description: "Checks timeline in edupage",
             enabled: true,
             repeatTime: 10 * 1000, // 10 sec
             excludeRunOnStart: false
@@ -31,7 +31,7 @@ export default class EduTimeLineCron extends Cron {
 
         }).catch(
             (err) => {
-                return this.client.logger.error(`Error fetching timeline: ${err}`)
+                return this.client.logger.error(`Error fetching timeline: ${err}`, this.name)
             }
         )
         if (!table) return;
@@ -57,7 +57,7 @@ export default class EduTimeLineCron extends Cron {
                 }
             }).catch(
                 (err) => {
-                    return this.client.logger.error(`Error creating timeline: ${err}`)
+                    return this.client.logger.error(`Error creating timeline: ${err}`, this.name)
                 }
             )
 

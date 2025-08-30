@@ -29,16 +29,16 @@ export class CronHandler {
                 this.client.logger.error(`Cron: ${file.split(path.sep).pop()} does not have a repeat time)`)
                 return
             }
-            this.client.crons.set(cron.name, cron);
+            this.client.crons.set(cron.name, cron as Cron);
 
             if (!cron.excludeRunOnStart) {
                 await cron.cronExecute()
             }
             
-            this.client.logger.info(`Loaded cron: ${cron.name}`);
+            this.client.logger.info(`Loaded cron: ${cron.name}`, cron.name);
             
             setInterval(a => {
-                this.client.logger.cron(`Running cron: ${cron.name}`)
+                this.client.logger.cron(`Running cron: ${cron.name}`, cron.name)
                 cron.cronExecute()
             }, cron.repeatTime)
 

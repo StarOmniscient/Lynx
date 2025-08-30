@@ -7,6 +7,7 @@ import { SubCommand } from "../structures/SubCommand.ts";
 import { CronHandler } from "../handlers/cronHandler.ts";
 import { Cron } from "../structures/Cron.ts";
 import { Logger } from "../utils/logger.ts";
+import { Event } from "../structures/Event.ts";
 
 
 export class LynxClient extends Client{
@@ -17,6 +18,7 @@ export class LynxClient extends Client{
     public commands: Collection<string, Command> 
     public subCommands: Collection<string, SubCommand>
     public crons: Collection<string, Cron>
+    public events: Collection<string, Event>
     public cooldowns: Collection<string, Collection<string, number>>
     public commandHandler: CommandHandler
     public eventHandler: EventHandler
@@ -56,6 +58,7 @@ export class LynxClient extends Client{
         this.subCommands = new Collection()
         this.cooldowns = new Collection()
         this.crons = new Collection()
+        this.events = new Collection()
         
         this.commandHandler = new CommandHandler(this)
         this.eventHandler = new EventHandler(this)

@@ -14,7 +14,7 @@ export default class ReadyEvent extends Event {
     }
 
     public async eventExecute() {
-        this.client.logger.info(`${this.client.user?.username} is online`);
+        this.client.logger.info(`${this.client.user?.username} is online`, this.name);
         await this.client.cronHandler.runCrons()
         
     }

@@ -24,7 +24,7 @@ export default class RegisterCommandsEvent extends Event {
             const globalCmds: any = await rest.put(Routes.applicationCommands(clientId), {
                 body: this.GetJson(this.client.commands.filter(command => command.dev != "development" && command.serverOnly.length == 0))
             })
-            this.client.logger.info(`Succesfully loaded ${globalCmds.length} global (/) commands`)
+            this.client.logger.info(`Succesfully loaded ${globalCmds.length} global (/) commands`, this.name)
 
             this.client.commands.filter(command => command.dev != "development" && command.serverOnly.length > 0).forEach(async command => {
                 if (!command.serverOnly) return
@@ -47,7 +47,7 @@ export default class RegisterCommandsEvent extends Event {
                 }
 
                 )
-                this.client.logger.info(`Loaded command: ${cmd[0].name} in server: ${cmd[0].guild_id}`)
+                this.client.logger.info(`Loaded command: ${cmd[0].name} in server: ${cmd[0].guild_id}`, this.name)
             }
 
             )
@@ -57,7 +57,7 @@ export default class RegisterCommandsEvent extends Event {
             body: this.GetJson(this.client.commands.filter(command => command.dev == "development"))
         })
 
-        this.client.logger.info(`Successfully loaded ${devCmds.length} dev (/) commands`)
+        this.client.logger.info(`Successfully loaded ${devCmds.length} dev (/) commands`, this.name)
 
 
         let dCmd = devCmds.map((cmd: { name: any; id: any; }) => {
