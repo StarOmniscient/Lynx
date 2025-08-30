@@ -9,7 +9,7 @@ interface LogEntry {
     context?: string;
 }
 
-const LOG_LEVELS = ["ALL", "INFO", "WARN", "ERROR", "DEBUG"];
+const LOG_LEVELS = ["ALL", "INFO", "WARN", "ERROR", "DEBUG", "COMMAND", "EVENT", "CRON", "ALERT"];
 
 export default function LogsPage() {
     const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -20,7 +20,7 @@ export default function LogsPage() {
         setLoading(true);
         try {
             const res = await fetch(
-                `/api/logs?level=${level !== "ALL" ? level : ""}&limit=100`,
+                `/api/get/logs?level=${level !== "ALL" ? level : ""}&limit=100`,
                 { cache: "no-store" }
             );
             if (!res.ok) throw new Error("Failed to fetch logs");
@@ -70,7 +70,7 @@ export default function LogsPage() {
                             className="bg-[#141826] border border-[#1f2435] rounded-2xl shadow-lg p-4"
                         >
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <InfoRow label="Timestamp" value={log.timestamp} />
+                                <InfoRow label="Timestamp" value={new Date(log.timestamp).toLocaleString()} />
                                 <InfoRow label="Level" value={log.level.toUpperCase()} />
                             </div>
                             <div className="mt-2">

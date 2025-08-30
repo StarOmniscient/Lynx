@@ -19,6 +19,22 @@ export class Logger {
         }
     }
 
+    public command(message: string, context?: string) {
+        this.save("COMMAND", message, context);
+    }
+
+    public event(message: string, context?: string) {
+        this.save("EVENT", message, context);
+    }
+
+    public cron(message: string, context?: string) {
+        this.save("CRON", message, context);
+    }
+
+    public alert(message: string, context?: string) {
+        this.save("ALERT", message, context)
+    }
+
     public info(message: string, context?: string) {
         this.save("INFO", message, context);
     }

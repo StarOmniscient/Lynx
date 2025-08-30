@@ -19,7 +19,7 @@ export default class PruneLogs extends Cron {
         
         await this.client.prisma.log.deleteMany({
         });
-        this.client.logger.info(`Pruned ${count} old logs`);
+        this.client.logger.cron(`Pruned ${count} old logs`);
 
     }
 }

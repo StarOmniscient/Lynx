@@ -170,7 +170,6 @@ export default class EduCommand extends Command {
                 }),
             )
         ).filter((hw) => hw != null);
-        console.log(homework)
         if (homework.length == 0) {
             return interaction.editReply({ content: "No homework found" });
         }
@@ -408,7 +407,7 @@ export default class EduCommand extends Command {
                 await messageChannel
                     .send({ content: htmlToText(str, { wordwrap: false }) })
                     .catch((err) => {
-                        console.error(err);
+                        this.client.logger.error(`Error sending message: ${err}`)
                         return;
                     });
             }
@@ -422,7 +421,7 @@ export default class EduCommand extends Command {
                         fs.unlinkSync(`./${file.name}`);
                     })
                     .catch((err) => {
-                        console.error(err);
+                        this.client.logger.error(`Error sending Attachment: ${err}`)
                         return;
                     });
             }
@@ -436,7 +435,7 @@ export default class EduCommand extends Command {
                         fs.unlinkSync(`./${img.name}`);
                     })
                     .catch((err) => {
-                        console.error(err);
+                        this.client.logger.error(`Error sending Attachment: ${err}`)
                         return;
                     });
             }

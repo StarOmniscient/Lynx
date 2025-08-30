@@ -1,8 +1,11 @@
 import CommandCard, { ICommand } from "@/components/CommandCard";
 
+export const dynamic = "force-dynamic";
+
+
 const Commands = async () => {
     async function fetchData() {
-        const res = await fetch('http://localhost:4444/commands', {
+        const res = await fetch(`http://localhost:${process.env.BOT_API_PORT}/commands`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

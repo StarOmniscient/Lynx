@@ -1,11 +1,11 @@
 import { ICommandOptions } from "@/bot/structures/Command";
+import { ApplicationCommandOption, ApplicationCommandOptionChoiceData } from "discord.js";
 import { notFound } from "next/navigation";
 
-interface CommandPageProps {
-  params: { name: string };
-}
 
-export default async function CommandPage({ params }: CommandPageProps) {
+export default async function CommandPage({ params }: {
+  params: Promise<{ name: string }>
+}) {
   const { name } = await params;
 
   if (!name) return notFound();
@@ -70,37 +70,41 @@ export default async function CommandPage({ params }: CommandPageProps) {
           <div>
             <h2 className="text-xl font-semibold mt-6 mb-2">Options</h2>
             <div className="space-y-4">
-              {data.options.map((opt: any, i: number) => (
+              {data.options.map((opt: ApplicationCommandOption, i: number) => (
                 <div
                   key={i}
                   className="bg-[#1f2435] rounded-xl p-4 border border-[#2a3042]"
                 >
-                  <p className="text-lg font-medium">{opt.name}</p>
-                  <p className="text-gray-400 text-sm mb-2">
-                    {opt.description}
+                  <p className="text-lg font-medium">
+                    <span className="font-semibold">Name: </span>{opt.name}
                   </p>
+
+                  <p className=" text-sm">
+                    <span className="font-semibold">Description: </span> {opt.description}
+                  </p>
+
                   <p className="text-sm">
-                    <span className="font-semibold">Type:</span> {opt.type}
+                    <span className="font-semibold">Type: </span> {opt.type}
                   </p>
 
                   {"required" in opt && (
                     <p className="text-sm">
-                      <span className="font-semibold">Required:</span>{" "}
+                      <span className="font-semibold">Required: </span>{" "}
                       {opt.required ? "Yes" : "No"}
                     </p>
                   )}
 
                   {"autocomplete" in opt && opt.autocomplete && (
                     <p className="text-sm">
-                      <span className="font-semibold">Autocomplete:</span> Yes
+                      <span className="font-semibold">Autocomplete: </span> Yes
                     </p>
                   )}
-
-                  {"choices" in opt && opt.choices?.length > 0 && (
+                  
+                  {"choices" in opt && (opt.choices?.length ?? 0) > 0 && (
                     <div className="mt-2">
                       <p className="font-semibold">Choices:</p>
                       <ul className="list-disc ml-6 mt-1 space-y-1 text-sm">
-                        {opt.choices.map((choice: any, j: number) => (
+                        {opt.choices!.map((choice: ApplicationCommandOptionChoiceData, j: number) => (
                           <li key={j}>
                             <span className="text-gray-300">
                               <span className="font-semibold">Name:</span>{" "}

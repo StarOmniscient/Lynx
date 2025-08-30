@@ -9,7 +9,7 @@
     "start": "concurrently \"next start\" \"ts-node bot/index.ts\"",
     "lint": "next lint",
     "docker-build": "sudo docker build -t lynx:latest .",
-    "docker-run": "sudo docker run -d lynx:latest"
+    "docker-run": "sudo docker run -d -p 3000:3000 --name lynx lynx:latest"
   },
   "dependencies": {
     "@eslint/eslintrc": "^3",
@@ -48,9 +48,9 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "yt-dlp-exec": "^1.0.2"
+    "yt-dlp-exec": "^1.0.2",
+    "tw-animate-css": "^1.3.7"
   },
   "devDependencies": {
-    "tw-animate-css": "^1.3.7"
   }
 }

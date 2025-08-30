@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Navbar = () => {
-  const [active, setActive] = useState("Logs");
+  const [active, setActive] = useState("Home");
 
-  const tabs = ["Logs", "Commands", "Config", "Database","Chat"];
+  const tabs = ["Home", "Logs", "Commands", "Config", "Database","Chat"];
 
   return (
     <nav className="w-full bg-[#0c0f1a] shadow-md">

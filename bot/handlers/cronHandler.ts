@@ -38,7 +38,7 @@ export class CronHandler {
             this.client.logger.info(`Loaded cron: ${cron.name}`);
             
             setInterval(a => {
-                this.client.logger.info(`Running cron: ${cron.name}`)
+                this.client.logger.cron(`Running cron: ${cron.name}`)
                 cron.cronExecute()
             }, cron.repeatTime)
 

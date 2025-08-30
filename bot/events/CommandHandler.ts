@@ -87,7 +87,7 @@ export default class CommandHandlerEvent extends Event {
                 //return command?.execute(interaction) || this.client.subcommands?.get(subCommand)?.execute(interaction)
 
             } catch (e) {
-                console.error(e)
+                this.client.logger.error(`Error while executing slash command ${interaction.commandName}: ${e}`)
             }
 
 
@@ -98,14 +98,14 @@ export default class CommandHandlerEvent extends Event {
             const command = this.client.commands.get(interaction.commandName);
 
             if (!command) {
-                console.log(`No command matching ${interaction.commandName} was found.`)
+                this.client.logger.error(`No command matching ${interaction.commandName} was found.`)
                 return;
             }
 
             try {
                 command.autoComplete(interaction);
             } catch (error) {
-                console.error(error);
+                this.client.logger.error(`Error while executing autocomplete command ${interaction.commandName}: ${error}`)
             }
         }
     }
