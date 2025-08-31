@@ -13,7 +13,7 @@ export default async function DatabasePage({ params }: {
 
     if (!name) return notFound()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = await (prisma as any )[name as keyof PrismaClient].findMany()
+    const db = await (prisma as any)[name as keyof PrismaClient].findMany()
     if (db.length == 0) {
         return (
             <p>No data found</p>
@@ -37,10 +37,19 @@ export default async function DatabasePage({ params }: {
                                     className="flex-1 px-4 py-3 border-b md:border-b-0 md:border-r border-[#2a3042] last:border-r-0"
                                 >
                                     <div className="text-gray-400 text-sm mb-1">{key}</div>
-                                    <div>{value instanceof Date ? value.toLocaleString() : String(value)}</div>
+                                    <div>
+                                        {value instanceof Date
+                                            ? value.toLocaleString()
+                                            : typeof value === "object"
+                                                ? <pre className="whitespace-pre-wrap break-words text-sm">
+                                                    {JSON.stringify(value, null, 2)}
+                                                </pre>
+                                                : String(value)}
+                                    </div>
                                 </div>
                             );
                         })}
+
                     </div>
                 </div>
             ))}

@@ -12,6 +12,7 @@ export default async function ChatPage() {
     })
     const guilds: { guilds: { id: string; name: string; iconUrl: string }[] } = await data.json()
 
+    
     return (
         <>
             {guilds.guilds.map((guild) => (

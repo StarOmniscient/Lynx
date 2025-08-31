@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+
+  images: {
+    remotePatterns: [new URL('https://cdn.discordapp.com/icons/**')],
+  },
 };
 
 export default nextConfig;

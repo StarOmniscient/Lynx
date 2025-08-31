@@ -41,7 +41,7 @@ export default class EduTimeLineCron extends Cron {
 
         //console.log(timeline)
         const newTimeline = await Promise.all(timeline.map(async item => {
-
+            
             if (table.includes(item.id)) return
             if (removeType.includes(item.type)) return;
             if (item.recipientUserString.includes("Ucitel")) return;
@@ -53,7 +53,7 @@ export default class EduTimeLineCron extends Cron {
                     timeLineID: item.id,
                     title: item.title,
                     type: item.type,
-                    text: item.text
+                    text: item.text,
                 }
             }).catch(
                 (err) => {

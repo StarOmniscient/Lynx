@@ -88,64 +88,49 @@ export default class EduCommand extends Command {
             await this.client.prisma.homeworkExists.deleteMany({
                 where: {
                     superID: interaction.options.getString("remove")!,
+                    guilID: interaction.guild?.id
                 },
             }).catch(e => {
-                this.client?.logger.error(`Error deleting homework ${interaction.options.getString("remove")}: ${e}`);
+                this.client.logger.error(`Error deleting homework ${interaction.options.getString("remove")} in guild ${interaction.guild?.name}: ${e}`, this.name);
                 return interaction.reply({ content: "Error deleting homework", flags: MessageFlags.Ephemeral });
             })
 
             return await interaction.reply({ content: "Homework Removed" });
         }
 
-        const mainChannels = {
-            APM: "1278300352969703434",
-            SJL: "1278300314197561388",
-            PCI: "1278300413480796242",
-            API: "1278306233065148469",
-            RUJ: "1278300487493484606",
-            GRS: "1278300433026387969",
-            WBN: "1278300549745213450",
-            OKD: "1278300596306186342",
-            ANJ: "1278300460658458624",
-            OBN: "1278300656393785345",
-            AFY: "1278300523279290471",
-            PRO: "1278300627017011302",
-            POG: "1310691740008579152",
-        };
-
-        const devChannels = {
-            APM: "1376621116256288839",
-            SJL: "1376621116256288839",
-            PCI: "1376621116256288839",
-            API: "1376621116256288839",
-            RUJ: "1376621116256288839",
-            GRS: "1376621116256288839",
-            WBN: "1376621116256288839",
-            OKD: "1376621116256288839",
-            ANJ: "1376621116256288839",
-            OBN: "1376621116256288839",
-            AFY: "1376621116256288839",
-            PRO: "1376621116256288839",
-            POG: "1376621116256288839",
-        };
-
         const startTime = Date.now();
-        const channels: Record<string, string> = client.mode == "development" ? devChannels : mainChannels;
+        const guildId = interaction.guild?.id
+
+
+        const hwChannels = await this.client.prisma.homeWorkChannels.findUnique({
+            where: { guildId },
+        });
+
+        if (!hwChannels) {
+            this.client.logger.error(`No channels config found for guild ${guildId}`, this.name);
+            return interaction.editReply("No homework channels configured for this server.");
+        }
+
+        const channels: Record<string, string> = hwChannels.channels as Record<string, string>;
+
         const homework = (
             await Promise.all(
                 this.edupage.assignments.map(async (work: Assignment) => {
-                    this.client!.logger.info(
+                    this.client.logger.info(
                         `Starting processing: ${work.title} (${work.id})`,
+                        this.name
                     );
                     if (
-                        await this.client!.prisma.homeworkExists.findFirst({
+                        await this.client.prisma.homeworkExists.findFirst({
                             where: {
                                 superID: work.superId,
+                                guilID: guildId,
                             },
                         })
                     ) {
-                        this.client?.logger.info(
+                        this.client.logger.info(
                             `Already exists skipping: ${work.title} (${work.id})`,
+                            this.name
                         );
                         return null;
                     }
@@ -178,19 +163,17 @@ export default class EduCommand extends Command {
         for (const work of homework) {
             const forumId = channels[work.subject.shortName];
             if (!forumId) {
-                this.client?.logger.error(
+                this.client.logger.error(
                     `No forum found for subject: ${work.subject.shortName}`,
+                    this.name
                 );
                 continue;
             }
 
-            const guild = await client.guilds.fetch(
-                client.mode == "development"
-                    ? "1015277694415548467"
-                    : "704765614627094589",
-            );
+            const guild = interaction.guild
+
             if (!guild) {
-                this.client?.logger.error(`No guild found`);
+                this.client.logger.error(`No guild found`, this.name);
                 continue;
             }
 
@@ -198,18 +181,19 @@ export default class EduCommand extends Command {
                 forumId,
             )) as ForumChannel;
             if (!forum) {
-                this.client?.logger.error(`No forum found`);
+                this.client.logger.error(`No forum found`, this.name);
                 continue;
             }
 
             if (interaction.options.getString("extra") === "fillDB") {
-                this.client?.logger.info("Filling DB")
-                await this.client?.prisma.homeworkExists.create({
+                this.client.logger.info(`Filling DB for ${interaction.guild.id}`, this.name)
+                await this.client.prisma.homeworkExists.create({
                     data: {
                         superID: work.superId,
                         title: work.title,
                         forumChannelID: "fill",
                         forumID: forum.id,
+                        guilID: guild.id
                     }
                 })
 
@@ -238,12 +222,13 @@ export default class EduCommand extends Command {
                     name: title,
                     message: { content: msg },
                 });
-                await this.client?.prisma.homeworkExists.create({
+                await this.client.prisma.homeworkExists.create({
                     data: {
                         superID: work.superId,
                         title: work.title,
                         forumChannelID: noIdForum.id,
                         forumID: forum.id,
+                        guilID: guild.id
                     }
                 })
                 continue;
@@ -255,7 +240,7 @@ export default class EduCommand extends Command {
             );
 
             if (!materialData) {
-                this.client?.logger.warn(`No materialData... continuing`);
+                this.client.logger.warn(`No materialData... continuing`, this.name);
                 continue;
             }
 
@@ -275,8 +260,9 @@ export default class EduCommand extends Command {
     "Time": "${materialData.timestamp.split(" ")[0]}"
 }\`\`\``;
 
-            this.client?.logger.info(
+            this.client.logger.info(
                 `Creating forum Thread for ${work.title}`,
+                this.name
             );
             const forumChan: ThreadChannel | null = await forum.threads
                 .create({
@@ -284,12 +270,12 @@ export default class EduCommand extends Command {
                     message: { content: msg },
                 })
                 .catch((err) => {
-                    this.client?.logger.error(`Error creating forum: ${err}`);
+                    this.client.logger.error(`Error creating forum: ${err}`, this.name);
                     return null;
                 })
 
             if (!forumChan) {
-                this.client?.logger.error(`No forumChan... continuing`);
+                this.client.logger.error(`No forumChan... continuing`, this.name);
                 continue;
             }
 
@@ -304,7 +290,7 @@ export default class EduCommand extends Command {
             for (const id of materialData.cardids) {
                 const data = await materialData.cardsData[id];
                 if (!data) {
-                    this.client?.logger.info(`No data for id: ${id}`);
+                    this.client.logger.info(`No data for id: ${id}`, this.name);
                     continue;
                 }
 
@@ -439,12 +425,13 @@ export default class EduCommand extends Command {
                         return;
                     });
             }
-            await this.client?.prisma.homeworkExists.create({
+            await this.client.prisma.homeworkExists.create({
                 data: {
                     superID: work.superId,
                     title: work.title,
                     forumChannelID: forumChan.id,
                     forumID: forum.id,
+                    guilID: guild.id
                 }
             })
         }
@@ -453,8 +440,9 @@ export default class EduCommand extends Command {
         interaction.editReply(
             `Processing completed [${endTime - startTime}ms].`,
         );
-        this.client?.logger.info(
+        this.client.logger.info(
             `Processing assignments took: ${endTime - startTime}ms`,
+            this.name
         );
         this.edupage.exit();
     }
@@ -486,20 +474,22 @@ export default class EduCommand extends Command {
         );
 
         if (!assignment) {
-            this.client?.logger.info(
+            this.client.logger.info(
                 `Assignment not found for homework: ${homework.title}`,
+                this.name
             );
             return;
         }
 
         const material = await assignment.getData().catch(async (err: Error) => {
-            this.client?.logger.error(`Error while getting Material: ${err}`);
+            this.client.logger.error(`Error while getting Material: ${err}`, this.name);
             return;
         });
 
         if (!material?.materialData) {
-            this.client?.logger.info(
+            this.client.logger.info(
                 `Material data not found for homework: ${homework.title}`,
+                this.name
             );
             return null;
         }
@@ -559,344 +549,344 @@ interface Work {
 
 
 interface TestData {
-	testid: string;
-	userid: string;
-	author: string;
-	timestamp: string;
-	name: string;
-	short: string | null;
-	description: string | null;
-	keywords: string | null;
-	options: {
-		variants: any[][];
-		gvariants: any[][];
-		screenProps: { cardsPerScreen: string };
-		studyCompetences: any[];
-		standards: any[];
-		variantsChanged: string;
-	};
-	cardids: string[];
-	etestType: string;
-	copyof: string | null;
-	school_card: string | null;
-	co_som: string;
-	editable: boolean;
-	cardsData: {
-		[key: string]: {
-			cardid: string;
-			userid: string;
-			author: string;
-			keywords: string;
-			competences: string | null;
-			subjectid: string | null;
-			content: string;
-			timestamp: string;
-			stav: string;
-			copyof: string | null;
-			school_card: string | null;
-			visibility: string;
-			has_question: string;
-			moredata: string | null;
-			copyof_diff: string | null;
-			histid: string;
-			groupid: string | null;
-			license: string | null;
-			editable: boolean;
-		};
-	};
+    testid: string;
+    userid: string;
+    author: string;
+    timestamp: string;
+    name: string;
+    short: string | null;
+    description: string | null;
+    keywords: string | null;
+    options: {
+        variants: any[][];
+        gvariants: any[][];
+        screenProps: { cardsPerScreen: string };
+        studyCompetences: any[];
+        standards: any[];
+        variantsChanged: string;
+    };
+    cardids: string[];
+    etestType: string;
+    copyof: string | null;
+    school_card: string | null;
+    co_som: string;
+    editable: boolean;
+    cardsData: {
+        [key: string]: {
+            cardid: string;
+            userid: string;
+            author: string;
+            keywords: string;
+            competences: string | null;
+            subjectid: string | null;
+            content: string;
+            timestamp: string;
+            stav: string;
+            copyof: string | null;
+            school_card: string | null;
+            visibility: string;
+            has_question: string;
+            moredata: string | null;
+            copyof_diff: string | null;
+            histid: string;
+            groupid: string | null;
+            license: string | null;
+            editable: boolean;
+        };
+    };
 }
 
 interface Student {
-	edupage: Edupage;
-	dateFrom: Date;
-	dateTo: Date | null;
-	firstname: string;
-	lastname: string;
-	gender: "M" | "F";
-	id: string;
-	userString: string;
-	isOut: boolean;
-	origin: string;
-	credentials: any; // Replace 'any' with the appropriate type
-	cookies: any; // Replace 'any' with the appropriate type
-	isLoggedIn: boolean;
-	email: string | null;
-	number: number;
-	numberInClass: number;
-	parent1Id: string;
-	parent2Id: string;
-	parent3Id: string;
-	parent1: Parent | undefined;
-	parent2: Parent | undefined;
-	parent3: Parent | null;
-	class: Class;
+    edupage: Edupage;
+    dateFrom: Date;
+    dateTo: Date | null;
+    firstname: string;
+    lastname: string;
+    gender: "M" | "F";
+    id: string;
+    userString: string;
+    isOut: boolean;
+    origin: string;
+    credentials: any; // Replace 'any' with the appropriate type
+    cookies: any; // Replace 'any' with the appropriate type
+    isLoggedIn: boolean;
+    email: string | null;
+    number: number;
+    numberInClass: number;
+    parent1Id: string;
+    parent2Id: string;
+    parent3Id: string;
+    parent1: Parent | undefined;
+    parent2: Parent | undefined;
+    parent3: Parent | null;
+    class: Class;
 }
 interface Teacher {
-	edupage: Edupage;
-	dateFrom: Date;
-	dateTo: Date | null;
-	firstname: string;
-	lastname: string;
-	gender: "M" | "F";
-	id: string;
-	userString: string;
-	isOut: boolean;
-	origin: string;
-	credentials: any; // Replace 'any' with the appropriate type
-	cookies: any; // Replace 'any' with the appropriate type
-	isLoggedIn: boolean;
-	email: string | null;
-	cb_hidden: number;
-	short: string;
-	classroom: Classroom | undefined;
+    edupage: Edupage;
+    dateFrom: Date;
+    dateTo: Date | null;
+    firstname: string;
+    lastname: string;
+    gender: "M" | "F";
+    id: string;
+    userString: string;
+    isOut: boolean;
+    origin: string;
+    credentials: any; // Replace 'any' with the appropriate type
+    cookies: any; // Replace 'any' with the appropriate type
+    isLoggedIn: boolean;
+    email: string | null;
+    cb_hidden: number;
+    short: string;
+    classroom: Classroom | undefined;
 }
 
 interface Parent {
-	edupage: Edupage;
-	dateFrom: Date | null;
-	dateTo: Date | null;
-	firstname: string;
-	lastname: string;
-	gender: "M" | "F";
-	id: string;
-	userString: string;
-	isOut?: boolean;
-	origin: string;
-	credentials: any; // Replace 'any' with the appropriate type
-	cookies: any; // Replace 'any' with the appropriate type
-	isLoggedIn: boolean;
-	email: string | null;
+    edupage: Edupage;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    firstname: string;
+    lastname: string;
+    gender: "M" | "F";
+    id: string;
+    userString: string;
+    isOut?: boolean;
+    origin: string;
+    credentials: any; // Replace 'any' with the appropriate type
+    cookies: any; // Replace 'any' with the appropriate type
+    isLoggedIn: boolean;
+    email: string | null;
 }
 
 interface Period {
-	id: string;
-	name: string;
-	short: string;
-	startTime: string;
-	endTime: string;
+    id: string;
+    name: string;
+    short: string;
+    startTime: string;
+    endTime: string;
 }
 
 interface Subject {
-	id: string;
-	name: string;
-	short: string;
+    id: string;
+    name: string;
+    short: string;
 }
 interface Classroom {
-	edupage: Edupage;
-	cb_hidden: boolean;
-	id: string;
-	name: string;
-	short: string;
+    edupage: Edupage;
+    cb_hidden: boolean;
+    id: string;
+    name: string;
+    short: string;
 }
 
 interface Class {
-	edupage: Edupage;
-	grade: number;
-	id: string;
-	name: string;
-	short: string;
-	classroom: Classroom;
-	teacher: Teacher;
-	teacher2?: Teacher;
+    edupage: Edupage;
+    grade: number;
+    id: string;
+    name: string;
+    short: string;
+    classroom: Classroom;
+    teacher: Teacher;
+    teacher2?: Teacher;
 }
 
 interface Application {
-	edupage: Edupage;
-	id: string;
-	dateFrom: Date | null;
-	dateTo: Date | null;
-	name: string;
-	parameters: string[];
-	availableFor: string;
-	isEnabled: boolean;
-	isTextOptional: boolean;
-	isAdvancedWorkflow: boolean;
-	isSimpleWorkflow: boolean;
+    edupage: Edupage;
+    id: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    name: string;
+    parameters: string[];
+    availableFor: string;
+    isEnabled: boolean;
+    isTextOptional: boolean;
+    isAdvancedWorkflow: boolean;
+    isSimpleWorkflow: boolean;
 }
 
 interface Plan {
-	edupage: Edupage;
-	id: string;
-	subjectId: string;
-	customClassId: string;
-	customName: string;
-	changedDate: Date;
-	year: number;
-	settings: any; // Replace 'any' with the appropriate type
-	isPublic: boolean;
-	state: string;
-	isValid: boolean;
-	approvedDate: Date | null;
-	isApproved: boolean;
-	otherId: any; // Replace 'any' with the appropriate type
-	topicsCount: number;
-	taughtCount: number;
-	standardsCount: number;
-	timetableGroup: string;
-	season: any; // Replace 'any' with the appropriate type
-	name: string;
-	classOrdering: number;
-	isEntireClass: boolean;
-	subject: Subject;
-	classes: Class[][];
-	teacher: Teacher;
-	teachers: Teacher[][];
-	students: (Student | undefined)[][];
+    edupage: Edupage;
+    id: string;
+    subjectId: string;
+    customClassId: string;
+    customName: string;
+    changedDate: Date;
+    year: number;
+    settings: any; // Replace 'any' with the appropriate type
+    isPublic: boolean;
+    state: string;
+    isValid: boolean;
+    approvedDate: Date | null;
+    isApproved: boolean;
+    otherId: any; // Replace 'any' with the appropriate type
+    topicsCount: number;
+    taughtCount: number;
+    standardsCount: number;
+    timetableGroup: string;
+    season: any; // Replace 'any' with the appropriate type
+    name: string;
+    classOrdering: number;
+    isEntireClass: boolean;
+    subject: Subject;
+    classes: Class[][];
+    teacher: Teacher;
+    teachers: Teacher[][];
+    students: (Student | undefined)[][];
 }
 
 interface ASC { }
 
 interface Assignment {
-	edupage: Edupage;
-	id: string;
-	superId: string;
-	owner: Teacher;
-	subject: Subject;
-	title: string;
-	details: string;
-	creationDate: Date;
-	fromDate: Date;
-	toDate: Date;
-	duration: number;
-	period: Period | null;
-	testId: string;
-	type: string;
-	hwkid: string | null;
-	cardsCount: number;
-	answerCardsCount: number;
-	state: string;
-	isSeen: boolean;
-	comment: string;
-	result: string;
-	isFinished: boolean;
-	stateUpdatedDate: Date;
-	stateUpdatedBy: Student;
-	grades: any[]; // Replace 'any' with the appropriate type
+    edupage: Edupage;
+    id: string;
+    superId: string;
+    owner: Teacher;
+    subject: Subject;
+    title: string;
+    details: string;
+    creationDate: Date;
+    fromDate: Date;
+    toDate: Date;
+    duration: number;
+    period: Period | null;
+    testId: string;
+    type: string;
+    hwkid: string | null;
+    cardsCount: number;
+    answerCardsCount: number;
+    state: string;
+    isSeen: boolean;
+    comment: string;
+    result: string;
+    isFinished: boolean;
+    stateUpdatedDate: Date;
+    stateUpdatedBy: Student;
+    grades: any[]; // Replace 'any' with the appropriate type
 }
 
 interface Homework {
-	edupage: Edupage;
-	id: string;
-	superId: string;
-	owner: Teacher;
-	subject: Subject;
-	title: string;
-	details: string;
-	creationDate: Date;
-	fromDate: Date;
-	toDate: Date;
-	duration: number;
-	period: Period | null;
-	testId: string;
-	type: string;
-	hwkid: string;
-	cardsCount: number;
-	answerCardsCount: number;
-	state: string;
-	isSeen: boolean;
-	comment: string;
-	result: string;
-	isFinished: boolean;
-	stateUpdatedDate: Date;
-	stateUpdatedBy: Student;
-	grades: any[]; // Replace 'any' with the appropriate type
+    edupage: Edupage;
+    id: string;
+    superId: string;
+    owner: Teacher;
+    subject: Subject;
+    title: string;
+    details: string;
+    creationDate: Date;
+    fromDate: Date;
+    toDate: Date;
+    duration: number;
+    period: Period | null;
+    testId: string;
+    type: string;
+    hwkid: string;
+    cardsCount: number;
+    answerCardsCount: number;
+    state: string;
+    isSeen: boolean;
+    comment: string;
+    result: string;
+    isFinished: boolean;
+    stateUpdatedDate: Date;
+    stateUpdatedBy: Student;
+    grades: any[]; // Replace 'any' with the appropriate type
 }
 
 interface Test {
-	edupage: Edupage;
-	id: string;
-	superId: string;
-	owner: Teacher;
-	subject: Subject;
-	title: string;
-	details: string;
-	creationDate: Date;
-	fromDate: Date;
-	toDate: Date;
-	duration: number;
-	period: Period | null;
-	testId: string;
-	type: string;
-	hwkid: string | null;
-	cardsCount: number;
-	answerCardsCount: number;
-	state: string;
-	isSeen: boolean;
-	comment: string;
-	result: string;
-	isFinished: boolean;
-	stateUpdatedDate: Date;
-	stateUpdatedBy: Teacher;
-	grades: any[]; // Replace 'any' with the appropriate type
+    edupage: Edupage;
+    id: string;
+    superId: string;
+    owner: Teacher;
+    subject: Subject;
+    title: string;
+    details: string;
+    creationDate: Date;
+    fromDate: Date;
+    toDate: Date;
+    duration: number;
+    period: Period | null;
+    testId: string;
+    type: string;
+    hwkid: string | null;
+    cardsCount: number;
+    answerCardsCount: number;
+    state: string;
+    isSeen: boolean;
+    comment: string;
+    result: string;
+    isFinished: boolean;
+    stateUpdatedDate: Date;
+    stateUpdatedBy: Teacher;
+    grades: any[]; // Replace 'any' with the appropriate type
 }
 
 interface Lesson {
-	edupage: Edupage;
-	id: string;
-	lid: string;
-	date: string;
-	homeworkNote: undefined | string;
-	absentNote: undefined | string;
-	curriculum: null | any; // Modify type according to actual data
-	onlineLessonURL: null | string;
-	isOnlineLesson: boolean;
-	period: Period;
-	subject: Subject;
-	classes: Class[];
-	classrooms: Classroom[];
-	students: Student[];
-	teachers: Teacher[];
-	assignments: Assignment[];
+    edupage: Edupage;
+    id: string;
+    lid: string;
+    date: string;
+    homeworkNote: undefined | string;
+    absentNote: undefined | string;
+    curriculum: null | any; // Modify type according to actual data
+    onlineLessonURL: null | string;
+    isOnlineLesson: boolean;
+    period: Period;
+    subject: Subject;
+    classes: Class[];
+    classrooms: Classroom[];
+    students: Student[];
+    teachers: Teacher[];
+    assignments: Assignment[];
 }
 
 interface ITimetable {
-	edupage: Edupage;
-	date: string;
-	lessons: Lesson[];
-	week: number;
+    edupage: Edupage;
+    date: string;
+    lessons: Lesson[];
+    week: number;
 }
 interface WidgetProps {
-	[key: string]: any;
+    [key: string]: any;
 }
 
 interface Widget {
-	widgetid: string;
-	widgetClass: string;
-	props: WidgetProps;
-	widgets: (FileETestWidget | TextETestWidget | QuestionETestWidget)[];
-	cardid?: string;
+    widgetid: string;
+    widgetClass: string;
+    props: WidgetProps;
+    widgets: (FileETestWidget | TextETestWidget | QuestionETestWidget)[];
+    cardid?: string;
 }
 
 interface FileETestWidgetProps extends WidgetProps {
-	src: string;
-	name: string;
-	thumb_l?: string;
-	thumb_m?: string;
-	thumb_s?: string;
-	type: string;
-	width?: number;
-	height?: number;
-	ts?: string;
-	id: number;
-	aspectRatio?: number;
-	cssFlex?: string;
+    src: string;
+    name: string;
+    thumb_l?: string;
+    thumb_m?: string;
+    thumb_s?: string;
+    type: string;
+    width?: number;
+    height?: number;
+    ts?: string;
+    id: number;
+    aspectRatio?: number;
+    cssFlex?: string;
 }
 
 interface FileETestWidget extends Widget {
-	props: FileETestWidgetProps;
+    props: FileETestWidgetProps;
 }
 
 interface TextETestWidgetProps extends WidgetProps {
-	htmlText: string;
-	guid: string;
-	isSecured?: boolean;
-	_parsedHtmlText?: string;
+    htmlText: string;
+    guid: string;
+    isSecured?: boolean;
+    _parsedHtmlText?: string;
 }
 
 interface TextETestWidget extends Widget {
-	props: TextETestWidgetProps;
+    props: TextETestWidgetProps;
 }
 
 interface QuestionETestWidget extends Widget {
-	widgets: (FileETestWidget | TextETestWidget)[];
+    widgets: (FileETestWidget | TextETestWidget)[];
 }
