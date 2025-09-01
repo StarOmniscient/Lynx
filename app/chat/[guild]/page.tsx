@@ -23,8 +23,7 @@ export default async function GuildPage({ params }: {
     })
 
     const data = await res.json()
-    
-    console.log(data)
+
     if (data.message === "Missing Access") {
         return <div>
             Bot doesnt have permissions to see channels or Discord Api didnt update yet.

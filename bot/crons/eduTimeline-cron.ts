@@ -36,10 +36,8 @@ export default class EduTimeLineCron extends Cron {
         )
         if (!table) return;
 
-        //console.log(table)
         const removeType = ["h_chatlist", "payments", "vcelicka", "znamka", "ospravedlnenka", "student_absent", "h_contest", "contest", "h_homework", "h_znamky", "interest", "settings", "znamkydoc", "testvysledok"]
 
-        //console.log(timeline)
         const newTimeline = await Promise.all(timeline.map(async item => {
             
             if (table.includes(item.id)) return
