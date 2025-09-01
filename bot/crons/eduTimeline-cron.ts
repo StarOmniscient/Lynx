@@ -36,45 +36,49 @@ export default class EduTimeLineCron extends Cron {
         )
         if (!table) return;
 
+        const existingIds = table.map(t => t.timeLineID);
+        const seenItems = new Set<string>();
+
         const removeType = ["h_chatlist", "payments", "vcelicka", "znamka", "ospravedlnenka", "student_absent", "h_contest", "contest", "h_homework", "h_znamky", "interest", "settings", "znamkydoc", "testvysledok"]
 
-        const newTimeline = await Promise.all(timeline.map(async item => {
-            
-            if (table.includes(item.id)) return
-            if (removeType.includes(item.type)) return;
-            if (item.recipientUserString.includes("Ucitel")) return;
-            if (item.recipientUserString.includes("StudentOnly408089")) return;
+        // Prepare a Set from DB
+        const existingTextKeys = new Set(table.map(t => `${t.text}|${t.timeLineDate?.toISOString()}`));
 
+        const newTimeline: typeof timeline = [];
 
+        for (const item of timeline) {
+            if (!item || removeType.includes(item.type)) continue;
+            if (item.recipientUserString.includes("Ucitel")) continue;
+            if (item.recipientUserString.includes("StudentOnly408089")) continue;
+
+            const key = `${item.text}|${item.timelineDate?.toISOString()}`;
+
+            // Skip if exists in DB or already processed in this run
+            if (existingTextKeys.has(key) || seenItems.has(key)) continue;
+
+            seenItems.add(key);        // Mark as processed
+            existingTextKeys.add(key); // Optional: mark in DB tracking as well
+
+            // Save to DB
             await this.client.prisma.timeline.create({
                 data: {
                     timeLineID: item.id,
                     title: item.title,
                     type: item.type,
                     text: item.text,
+                    timeLineDate: item.timelineDate
                 }
-            }).catch(
-                (err) => {
-                    return this.client.logger.error(`Error creating timeline: ${err}`, this.name)
-                }
-            )
+            }).catch(err => this.client.logger.error(`Error creating timeline: ${err}`, this.name));
 
-
-
-
-            return {
+            newTimeline.push({
                 id: item.id,
                 title: item.title,
                 type: item.type,
                 text: item.text,
-                attachments: await item.attachments.map((attachment: { name: string; src: string; }) => {
-                    return {
-                        name: attachment.name,
-                        src: attachment.src
-                    }
-                })
-            };
-        }));
+                attachments: item.attachments.map((att: { name: string, src: string }) => ({ name: att.name, src: att.src })),
+            });
+        }
+
 
         let channel: TextChannel, guild
 
@@ -103,8 +107,8 @@ export default class EduTimeLineCron extends Cron {
         };
 
 
-        await newTimeline.map(async item => {
-            if (!item) return;
+        for (const item of newTimeline.reverse()) { // reverse array first
+            if (!item) continue;
             const embed = new EmbedBuilder()
                 .setColor(colors[item.type])
                 .setTimestamp()
@@ -112,37 +116,23 @@ export default class EduTimeLineCron extends Cron {
             if (item.text.length > 4096) {
                 embed.setDescription(item.text.slice(0, 4096))
             } else {
-
-                if (item.text.length < 1) {
-                    embed.setTitle(item.title.replace(process.env.SKIP_NAME, "----"))
-                    embed.setDescription(`No text`)
-                } else {
-                    embed.setDescription(item.text)
-                }
+                embed.setDescription(item.text || "No text")
             }
 
-            if (item.title.length > 256) {
-                embed.setTitle(item.title.slice(0, 256).replace(process.env.SKIP_NAME, "----"))
-            } else {
-                embed.setTitle(item.title.replace(process.env.SKIP_NAME, "----"))
-            }
+            embed.setTitle(item.title.length > 256
+                ? item.title.slice(0, 256).replace(process.env.SKIP_NAME, "----")
+                : item.title.replace(process.env.SKIP_NAME, "----")
+            )
 
             if (item.attachments.length > 0) {
-                const url = item.attachments[0].src;
-                const filename = item.attachments[0].name;
-                // Download the image
-                const response = await fetch(url);
-                const buffer = await response.buffer();
-
-                // Create a Discord attachment
-                const attachment = new AttachmentBuilder(buffer, { name: filename });
-
+                const response = await fetch(item.attachments[0].src)
+                const buffer = await response.buffer()
+                const attachment = new AttachmentBuilder(buffer, { name: item.attachments[0].name })
                 await channel.send({ embeds: [embed], files: [attachment] })
-                return
+            } else {
+                await channel.send({ embeds: [embed] })
             }
+        }
 
-            await channel.send({ embeds: [embed] })
-
-        })
     }
 }

@@ -1,7 +1,7 @@
 import { Cron } from "../structures/Cron.ts";
 
 
-export default class PruneLogs extends Cron {
+export default class PruneLogsCron extends Cron {
     public constructor() {
         super({
             name: "PruneLogsCron",
