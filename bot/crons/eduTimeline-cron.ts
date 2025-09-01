@@ -1,11 +1,11 @@
 import { Cron } from "../structures/Cron.ts";
-import { Edupage } from "edupage-api"
-import { AttachmentBuilder, Guild, GuildChannel, TextChannel } from "discord.js"
-import { EmbedBuilder } from "@discordjs/builders"
+import { Edupage } from "edupage-api";
+import { AttachmentBuilder, TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import fetch from "node-fetch";
-import "dotenv/config"
-import client from "../index.ts"
-import config from "../../config.ts"
+import "dotenv/config";
+import client from "../index.ts";
+import config from "../../config.ts";
 
 const edupage = new Edupage()
 
@@ -25,7 +25,7 @@ export default class EduTimeLineCron extends Cron {
         if (!edupage.user) {
             await edupage.login(process.env.EDU_NAME!, process.env.EDU_PASS!)
         }
-
+        edupage.refreshTimeline(true)
         const timeline = edupage.timeline
         const table = await this.client.prisma.timeline.findMany({
 
@@ -36,7 +36,6 @@ export default class EduTimeLineCron extends Cron {
         )
         if (!table) return;
 
-        const existingIds = table.map(t => t.timeLineID);
         const seenItems = new Set<string>();
 
         const removeType = ["h_chatlist", "payments", "vcelicka", "znamka", "ospravedlnenka", "student_absent", "h_contest", "contest", "h_homework", "h_znamky", "interest", "settings", "znamkydoc", "testvysledok"]
@@ -48,13 +47,20 @@ export default class EduTimeLineCron extends Cron {
 
         for (const item of timeline) {
             if (!item || removeType.includes(item.type)) continue;
+            
             if (item.recipientUserString.includes("Ucitel")) continue;
             if (item.recipientUserString.includes("StudentOnly408089")) continue;
-
+            
             const key = `${item.text}|${item.timelineDate?.toISOString()}`;
 
             // Skip if exists in DB or already processed in this run
             if (existingTextKeys.has(key) || seenItems.has(key)) continue;
+
+            this.client.logger.debug({
+                title: item.title,
+                text: item.text,
+                type: item.type
+            })
 
             seenItems.add(key);        // Mark as processed
             existingTextKeys.add(key); // Optional: mark in DB tracking as well

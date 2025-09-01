@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import client from "../index.ts";
 
 const prisma = new PrismaClient();
 
@@ -46,8 +47,10 @@ export class Logger {
         this.save("ERROR", message, context);
     }
 
-    public debug(message: string, context?: string) {
-        this.save("DEBUG", message, context);
+    public debug(message: string | object, context?: string) {
+        if (client.mode == "development") {
+            return console.log(message)
+        }
     }
 
 }
