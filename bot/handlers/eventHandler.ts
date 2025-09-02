@@ -18,7 +18,7 @@ export class EventHandler {
             try {
                 const { default: EventClass } = await import(pathToFileURL(file).href);
                 const event: Event = new EventClass(this.client);
-
+                this.client.events.set(event.name, event as Event)
                 if (!event.enabled) return
 
                 if (!event.name) {
@@ -29,7 +29,7 @@ export class EventHandler {
                 if (event.once) this.client.once(event.type as string, execute)
                 else this.client.on(event.type as string, execute)
                 
-                this.client.events.set(event.name, event as Event)
+                
                 this.client.logger.info(`Loaded event: ${event.name}`, event.name);
                 return 
 

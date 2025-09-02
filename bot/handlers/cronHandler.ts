@@ -17,8 +17,8 @@ export class CronHandler {
         files.map(async (file: string) => {
             const { default: CronClass } = await import(pathToFileURL(file).href);
             const cron: Cron = new CronClass(this.client);
-
-            if (!cron.enabled) return
+            this.client.crons.set(cron.name, cron as Cron);
+            if (!cron.enabled) return   
 
             if (!cron.name) {
                 this.client.logger.error(`Cron: ${file.split(path.sep).pop()} does not have a name`)
@@ -29,7 +29,7 @@ export class CronHandler {
                 this.client.logger.error(`Cron: ${file.split(path.sep).pop()} does not have a repeat time)`)
                 return
             }
-            this.client.crons.set(cron.name, cron as Cron);
+            
 
             if (!cron.excludeRunOnStart) {
                 await cron.cronExecute()

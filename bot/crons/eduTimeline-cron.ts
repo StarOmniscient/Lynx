@@ -14,7 +14,7 @@ export default class EduTimeLineCron extends Cron {
         super({
             name: "EduTimelineCron",
             description: "Checks timeline in edupage",
-            enabled: true,
+            enabled: false,
             repeatTime: 10 * 1000, // 10 sec
             excludeRunOnStart: false
         })
@@ -42,11 +42,15 @@ export default class EduTimeLineCron extends Cron {
 
         // Prepare a Set from DB
         const existingTextKeys = new Set(table.map(t => `${t.text}|${t.timeLineDate?.toISOString()}`));
+        const existingId = new Set(table.map(t => t.timeLineID));
+
 
         const newTimeline: typeof timeline = [];
 
         for (const item of timeline) {
             if (!item || removeType.includes(item.type)) continue;
+
+            if (existingId.has(item.id))
             
             if (item.recipientUserString.includes("Ucitel")) continue;
             if (item.recipientUserString.includes("StudentOnly408089")) continue;

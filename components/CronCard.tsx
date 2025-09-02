@@ -2,12 +2,6 @@ import { Cron } from "@/bot/structures/Cron";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
-export interface ICommand {
-  name: string;
-  description: string;
-  enabled: boolean;
-}
-
 const CronCard = ({ cron }: { cron: Cron }) => {
   return (
     <>

@@ -32,7 +32,6 @@ export class CommandHandler {
                 this.client.subCommands.set(command.name, command as SubCommand);
             } else {
                 this.client.commands.set(command.name, command as Command);
-
             }
             this.client.logger.info(`Loaded command: ${command.name}`, command.name);
         })
