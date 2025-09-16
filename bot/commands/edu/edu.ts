@@ -92,10 +92,10 @@ export default class EduCommand extends Command {
                 },
             }).catch(e => {
                 this.client.logger.error(`Error deleting homework ${interaction.options.getString("remove")} in guild ${interaction.guild?.name}: ${e}`, this.name);
-                return interaction.reply({ content: "Error deleting homework", flags: MessageFlags.Ephemeral });
+                return interaction.editReply({ content: "Error deleting homework"});
             })
 
-            return await interaction.reply({ content: "Homework Removed" });
+            return await interaction.editReply({ content: "Homework Removed" });
         }
 
         const startTime = Date.now();

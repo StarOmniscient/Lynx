@@ -67,6 +67,8 @@ export class LynxClient extends Client{
         this.commandHandler.loadCommands()
         this.eventHandler.loadEvents()
         // this.cronHandler.runCrons()  //  Moved to ready event
+
+        this.createDefaultUser()
     }
 
     
@@ -92,6 +94,23 @@ export class LynxClient extends Client{
         if (!token) throw new Error("No token provided")
 
         return super.login(token)
+    }
+
+    private async createDefaultUser() {
+        const users = await this.prisma.user.findMany()
+
+        if (users.length == 0) {
+            const name = "lynx"
+            const password = this.token ? `${this.token?.slice(0, 8)}` : `${Math.random().toString(36).slice(2, 8)}`
+            await this.prisma.user.create({
+                data: {
+                    name,
+                    password
+                }
+            }).then(() => {
+                console.log(`Created default user with name: ${name} and password: ${password}`)
+            })
+        }
     }
 
 }
