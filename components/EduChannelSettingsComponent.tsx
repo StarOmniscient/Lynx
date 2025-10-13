@@ -16,7 +16,7 @@ export default function EduChannelSettingsComponent() {
             return;
         }
 
-        const res = await fetch("/api/settings", {
+        const res = await fetch("/api/settings/eduChannels", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ guildId, channels: parsed }),

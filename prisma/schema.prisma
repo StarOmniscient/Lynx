@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -50,7 +50,7 @@ model Log {
   id        Int      @id @default(autoincrement())
   timestamp DateTime @default(now())
   level     String
-  message   String   @db.LongText
+  message   String   @db.Text
   context   String?
 }
 

@@ -185,7 +185,7 @@ export default class EduCommand extends Command {
                 continue;
             }
 
-            if (interaction.options.getString("extra") === "fillDB") {
+            if (interaction.options.getString("extra") === "fill-db") {
                 this.client.logger.info(`Filling DB for ${interaction.guild.id}`, this.name)
                 await this.client.prisma.homeworkExists.create({
                     data: {
