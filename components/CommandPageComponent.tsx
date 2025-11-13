@@ -23,7 +23,7 @@ export default function CommandPageComponent({ data, logs }: { data: Command, lo
           <InfoRow label="Description" value={data.description} />
           <InfoRow label="Category" value={data.category} />
           <InfoRow label="Cooldown" value={String(data.cooldown)} />
-          <InfoRow label="Developer Only" value={data.dev ? "Yes" : "No"} />
+          <InfoRow label="Developer Only" value={data.dev == "development" ? "Yes" : "No"} />
           <InfoRow label="Server Only" value={data.serverOnly ? "Yes" : "No"} />
           <InfoRow label="Enabled" value={data.enabled ? "Yes" : "No"} />
           <InfoRow label="NSFW" value={data.nsfw ? "Yes" : "No"} />

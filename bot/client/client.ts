@@ -23,6 +23,7 @@ export class LynxClient extends Client{
     public commandHandler: CommandHandler
     public eventHandler: EventHandler
     public cronHandler: CronHandler
+    public areCommandsLoaded: Boolean = false
 
 
     public constructor() {

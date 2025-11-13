@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["lynx"]
 }
 
 model HomeworkExists {
@@ -20,11 +21,15 @@ model HomeworkExists {
   forumChannelID String
   forumID        String
   guilID         String
+
+  @@schema("lynx")
 }
 
 model HomeWorkChannels {
   guildId  String @id
   channels Json   @db.Json
+
+  @@schema("lynx")
 }
 
 model Timeline {
@@ -35,6 +40,8 @@ model Timeline {
   timeLineDate DateTime
   guildID      String?  @db.Text
   text         String?  @db.Text // nullable
+
+  @@schema("lynx")
 }
 
 model Birthdays {
@@ -44,6 +51,8 @@ model Birthdays {
   guildID   String    @db.Text
   channelID String    @db.Text
   lastSent  DateTime? // nullable,
+
+  @@schema("lynx")
 }
 
 model Log {
@@ -52,6 +61,8 @@ model Log {
   level     String
   message   String   @db.Text
   context   String?
+
+  @@schema("lynx")
 }
 
 model NwordCount {
@@ -63,16 +74,32 @@ model NwordCount {
   month   Int
 
   @@unique([userID, guildID, year, month])
+  @@schema("lynx")
 }
 
 model ServerConfig {
   id      Int    @id @default(autoincrement())
   guildID String @unique
   config  Json   @db.Json
+
+  @@schema("lynx")
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  name String @unique
+  id       Int    @id @default(autoincrement())
+  name     String @unique
   password String @db.Text
+
+  @@schema("lynx")
+}
+
+model ChatMessages {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  userId    String
+  message   String @db.Text
+  timestamp DateTime @default(now())
+
+  @@schema("lynx")
 }

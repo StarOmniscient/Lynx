@@ -21,7 +21,7 @@ export class Event {
         this.enabled = options.enabled
     }
 
-    public async eventExecute(...args: any) {
+    public async eventExecute(...args: any): Promise<any> {
 
     }
 

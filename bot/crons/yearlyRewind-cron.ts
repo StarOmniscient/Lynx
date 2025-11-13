@@ -23,37 +23,13 @@ export default class YearlyRewindCron extends Cron {
 
 
         if (day == 31 && month == 12) {
-            if (lastRunYear === year) return; // ✅ prevent second run
+            if (lastRunYear === year) return; // prevent second run
             lastRunYear = year;
 
 
             for (const server of servers) {
                 const channel = this.client.guilds.cache.get(server.guild)?.channels.cache.get(server.channel) as TextChannel
                 
-                // nword count
-                const nwords = await this.client.prisma.nwordCount.findMany({
-                    where: {
-                        guildID: server.guild,
-                        year: new Date().getFullYear(),
-
-
-                    }
-                })
-
-                const lines = nwords.map(
-                    (nword) => `<@${nword.userID}>\nCount: ${nword.count}`
-                );
-
-                const description =
-                    lines.length > 0 ? lines.join("\n\n") : "No data available for this rewind.";
-                const nword_embed = new EmbedBuilder()
-                    .setTitle("Yearly Nword Rewind")
-                    .setDescription(description) // double newlines for spacing
-
-
-                await channel?.send({ embeds: [nword_embed] })
-
-
             }
 
         }

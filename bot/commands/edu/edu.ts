@@ -161,7 +161,7 @@ export default class EduCommand extends Command {
 
 
         for (const work of homework) {
-            const forumId = channels[work.subject.shortName];
+            const forumId = channels[work.subject.shortName.toLowerCase()];
             if (!forumId) {
                 this.client.logger.error(
                     `No forum found for subject: ${work.subject.shortName}`,

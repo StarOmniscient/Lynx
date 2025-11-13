@@ -3,7 +3,6 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 
 export default async function DatabasePage() {
-    
     const data = Object.keys(prisma).filter(obj =>  !obj.startsWith("$") && !obj.startsWith("_") && obj != "constructor")
 
     return (

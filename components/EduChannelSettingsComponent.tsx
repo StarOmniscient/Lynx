@@ -4,7 +4,7 @@ import { useState } from "react";
 export default function EduChannelSettingsComponent() {
     const [guildId, setGuildId] = useState("");
     const [channels, setChannels] = useState<{ [key: string]: string }>({});
-    const [channelsText, setChannelsText] = useState('{\n  "APM": "",\n  "SJL": ""\n}');
+    const [channelsText, setChannelsText] = useState('{\n  "apm": "",\n  "sjl": ""\n}');
 
     const handleSave = async () => {
         let parsed: { [key: string]: string } = {};

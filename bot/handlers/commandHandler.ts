@@ -17,7 +17,7 @@ export class CommandHandler {
         const files = (await glob("bot/commands/**/*.{js,ts}")).map(filepath => path.resolve(filepath));
 
 
-        files.map(async (file: string) => {
+        await files.map(async (file: string) => {
             const { default: CommandClass } = await import(pathToFileURL(file).href);
             const command: Command | SubCommand = new CommandClass();
 
@@ -35,5 +35,6 @@ export class CommandHandler {
             }
             this.client.logger.info(`Loaded command: ${command.name}`, command.name);
         })
+        this.client.areCommandsLoaded = true;
     }
 }

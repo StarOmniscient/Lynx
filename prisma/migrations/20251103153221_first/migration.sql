@@ -1,5 +1,8 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "lynx";
+
 -- CreateTable
-CREATE TABLE "public"."HomeworkExists" (
+CREATE TABLE "lynx"."HomeworkExists" (
     "id" SERIAL NOT NULL,
     "superID" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -11,7 +14,7 @@ CREATE TABLE "public"."HomeworkExists" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."HomeWorkChannels" (
+CREATE TABLE "lynx"."HomeWorkChannels" (
     "guildId" TEXT NOT NULL,
     "channels" JSON NOT NULL,
 
@@ -19,7 +22,7 @@ CREATE TABLE "public"."HomeWorkChannels" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Timeline" (
+CREATE TABLE "lynx"."Timeline" (
     "id" SERIAL NOT NULL,
     "timeLineID" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -32,7 +35,7 @@ CREATE TABLE "public"."Timeline" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Birthdays" (
+CREATE TABLE "lynx"."Birthdays" (
     "id" SERIAL NOT NULL,
     "userID" TEXT NOT NULL,
     "date" TEXT NOT NULL,
@@ -44,7 +47,7 @@ CREATE TABLE "public"."Birthdays" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."Log" (
+CREATE TABLE "lynx"."Log" (
     "id" SERIAL NOT NULL,
     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "level" TEXT NOT NULL,
@@ -55,7 +58,7 @@ CREATE TABLE "public"."Log" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."NwordCount" (
+CREATE TABLE "lynx"."NwordCount" (
     "id" SERIAL NOT NULL,
     "guildID" TEXT NOT NULL,
     "userID" TEXT NOT NULL,
@@ -67,7 +70,7 @@ CREATE TABLE "public"."NwordCount" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."ServerConfig" (
+CREATE TABLE "lynx"."ServerConfig" (
     "id" SERIAL NOT NULL,
     "guildID" TEXT NOT NULL,
     "config" JSON NOT NULL,
@@ -76,7 +79,7 @@ CREATE TABLE "public"."ServerConfig" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."User" (
+CREATE TABLE "lynx"."User" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "password" TEXT NOT NULL,
@@ -84,11 +87,22 @@ CREATE TABLE "public"."User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "NwordCount_userID_guildID_year_month_key" ON "public"."NwordCount"("userID", "guildID", "year", "month");
+-- CreateTable
+CREATE TABLE "lynx"."ChatMessages" (
+    "id" SERIAL NOT NULL,
+    "guildId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ChatMessages_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ServerConfig_guildID_key" ON "public"."ServerConfig"("guildID");
+CREATE UNIQUE INDEX "NwordCount_userID_guildID_year_month_key" ON "lynx"."NwordCount"("userID", "guildID", "year", "month");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_name_key" ON "public"."User"("name");
+CREATE UNIQUE INDEX "ServerConfig_guildID_key" ON "lynx"."ServerConfig"("guildID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_name_key" ON "lynx"."User"("name");

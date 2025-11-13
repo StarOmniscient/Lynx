@@ -20,6 +20,11 @@ export default class RegisterCommandsEvent extends Event {
         const clientId = this.client.user?.id ?? ""
         const rest = new REST().setToken(this.client.token!)
 
+        while (!this.client.areCommandsLoaded) {
+            this.client.logger.warn("Waiting for commands to load", this.name)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
         if (this.client.mode == "production") {
             const globalCmds: any = await rest.put(Routes.applicationCommands(clientId), {
                 body: this.GetJson(this.client.commands.filter(command => command.dev != "development" && command.serverOnly.length == 0))
